@@ -35,6 +35,8 @@ src/
 └── utils/          # Math & geometry helpers
 ```
 
-❤️ Credits
+## ❤️ Credits
+
 Inspired by Mol*
+
 Built using REGL
