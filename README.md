@@ -22,6 +22,7 @@ Explore protein backbones, spline interpolations, and smooth-tube meshes using m
 ```bash
 npm install
 npm run dev
+```
 
 ## 📁 Project Structure
 src/
