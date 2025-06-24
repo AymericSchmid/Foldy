@@ -25,6 +25,7 @@ npm run dev
 ```
 
 ## 📁 Project Structure
+```
 src/
 ├── controls/       # UI & trackball control
 ├── draw/           # WebGL rendering commands
@@ -32,6 +33,7 @@ src/
 ├── mesh/           # Spline & tube mesh generation
 ├── shaders/        # GLSL shaders
 └── utils/          # Math & geometry helpers
+```
 
 ❤️ Credits
 Inspired by Mol*
