@@ -1,0 +1,23 @@
+{
+  "name": "protein-viewer",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "angle-normals": "^1.0.0",
+    "gl-mat4": "^1.2.0",
+    "glslify": "^7.1.1",
+    "primitive-sphere": "^3.0.0",
+    "regl": "^2.1.1",
+    "webgl-obj-loader": "^2.0.8"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5",
+    "vite-plugin-glsl": "^1.5.0"
+  }
+}
