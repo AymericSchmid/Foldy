@@ -3,6 +3,8 @@ import createREGL from 'regl';
 export function initRegl() {
     const canvas = document.getElementById('canvas');
     const DPR    = Math.min(window.devicePixelRatio || 1, 2);
+    const fbWidth = Math.floor(window.innerWidth * DPR);
+    const fbHeight = Math.floor(window.innerHeight * DPR);
 
     function resizeCanvas() {
         const cssW = window.innerWidth;
@@ -16,7 +18,7 @@ export function initRegl() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-
+    // Create the REGL instance
     const regl = createREGL({
         extensions: ['ANGLE_instanced_arrays'],
         attributes: {
@@ -29,5 +31,15 @@ export function initRegl() {
         canvas,
     });
 
-    return { regl, canvas, DPR };
+    const colorTex = regl.texture({
+        width: fbWidth,
+        height: fbHeight,
+        format: 'rgba',
+        type: 'uint8'
+    })
+
+    // Build framebuffers
+    const sceneFbo = regl.framebuffer({ depth: true, color: colorTex });
+
+    return { regl, canvas, DPR, sceneFbo };
 }
