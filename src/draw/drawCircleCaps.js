@@ -20,6 +20,7 @@ export function createDrawCircleCaps(regl, positions){
             alpha: regl.prop('alpha'),
             projection: regl.prop('projection'),
             model: regl.prop('model'),
+            view: regl.prop('view'),
         },
 
         // Number of vertices (each 3D vertex has 3 components)

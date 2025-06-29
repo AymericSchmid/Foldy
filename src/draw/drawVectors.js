@@ -1,5 +1,5 @@
 import glsl from 'glslify';
-import vert from '../shaders/vector.vert?raw'
+import vert from '../shaders/basic.vert?raw'
 import frag from '../shaders/vector.frag?raw'
 
 // Creates a REGL draw command for rendering a line defined by two points
@@ -19,6 +19,7 @@ export function createDrawVectors(regl, lines){
             color: regl.prop('color'),
             projection: regl.prop('projection'),
             model: regl.prop('model'),
+            view: regl.prop('view')
         },
 
         // Number of vertices (each 3D vertex has 3 components)

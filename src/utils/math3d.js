@@ -28,12 +28,18 @@ export function cross(a, b) {
             a[0] * b[1] - a[1] * b[0]]
 }
 
-/**
- * Compute the surface normal of a triangle defined by 3 points.
- * Uses the cross product of two edge vectors and normalizes the result.
- */
-export function computeTriangleNormal(p0, p1, p2) {
-    const v1 = subtract(p1, p0);
-    const v2 = subtract(p2, p0);
-    return normalize(cross(v1, v2));
+export function extractMat3FromMat4(m4) {
+  return [
+    m4[0], m4[1], m4[2],
+    m4[4], m4[5], m4[6],
+    m4[8], m4[9], m4[10]
+  ];
+}
+
+export function transformVec3WithMat3(v, m3) {
+  return [
+    m3[0] * v[0] + m3[3] * v[1] + m3[6] * v[2],
+    m3[1] * v[0] + m3[4] * v[1] + m3[7] * v[2],
+    m3[2] * v[0] + m3[5] * v[1] + m3[8] * v[2],
+  ];
 }

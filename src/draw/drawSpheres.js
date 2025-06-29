@@ -26,6 +26,7 @@ export async function createDrawSpheres(regl, sphere, spherePositions, { scale =
         uniforms: {
             projection: regl.prop('projection'),
             model: regl.prop('model'),
+            view: regl.prop('view'),
             scale: scale
         },
 

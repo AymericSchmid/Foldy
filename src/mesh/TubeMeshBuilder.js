@@ -1,4 +1,3 @@
-import { computeTriangleNormal } from '../utils/math3d' 
 
 export class TubeMeshBuilder {
     constructor(splinePoints, frames, { radius = 0.02, radialSegment = 5} = {}){
@@ -12,7 +11,8 @@ export class TubeMeshBuilder {
         this.numPoints = splinePoints.length / 3;
         
         // Circle vertices for each spline point
-        this.circleVertices = new Float32Array(radialSegment * 3 * this.numPoints);
+        this.circleVertices = new Float32Array(this.radialSegment * 3 * this.numPoints);
+        this.circleNormals = new Float32Array(this.radialSegment * 3 * this.numPoints);
 
         // Tube geometry: 2 triangles per segment per slice
         this.numTriangles = (this.numPoints - 1) * this.radialSegment * 2;
@@ -28,29 +28,38 @@ export class TubeMeshBuilder {
             const p = getVec(i, this.splinePoints);
             const r = getVec(i, this.r);
             const c = getVec(i, this.c);
-            const vertices = this.generateCircle(p, r, c);
+            const { vertices, normals } = this.generateCircle(p, r, c);
             this.circleVertices.set(vertices, i * 3 * this.radialSegment);
+            this.circleNormals.set(normals, i * 3 * this.radialSegment);
         }
     }
 
     // Generate a circle at a point using frame vectors
     generateCircle(point, r, c) {
         const vertices = new Float32Array(this.radialSegment * 3);
+        const normals = new Float32Array(this.radialSegment * 3);
 
         for (let i = 0; i < this.radialSegment; i++) {
             const angle = (i / this.radialSegment) * 2 * Math.PI;
             const dx = Math.cos(angle) * this.radius;
             const dy = Math.sin(angle) * this.radius;
 
-            // Position = center + dx * r + dy * c
-            const x = point[0] + r[0] * dx + c[0] * dy;
-            const y = point[1] + r[1] * dx + c[1] * dy;
-            const z = point[2] + r[2] * dx + c[2] * dy;
+            const normal = [
+                dx * r[0] + dy * c[0],
+                dx * r[1] + dy * c[1],
+                dx * r[2] + dy * c[2]
+            ];
+            const position = [
+                point[0] + normal[0],
+                point[1] + normal[1],
+                point[2] + normal[2]
+            ];
 
-            vertices.set([x, y, z], i * 3);
+            vertices.set(position, i * 3);
+            normals.set(normal, i * 3);
         }
 
-        return vertices;
+        return { vertices, normals };
     }
 
     // Generate flat caps at each ring (optional)
@@ -83,12 +92,14 @@ export class TubeMeshBuilder {
 
     // Tesselate the tube by connecting adjacent rings with quads split into triangles
     tesselateTube() {
-        const getCircle = (i) => this.circleVertices.slice(i * this.radialSegment * 3, i * this.radialSegment * 3 + this.radialSegment * 3); 
+        const getCircle = (arr, i) => arr.slice(i * this.radialSegment * 3, i * this.radialSegment * 3 + this.radialSegment * 3); 
 
         let offset = 0;
         for (let i = 0; i < this.numPoints - 1; i++) {
-            const ci0 = getCircle(i);
-            const ci1 = getCircle(i + 1);
+            const ci0 = getCircle(this.circleVertices, i);
+            const ci1 = getCircle(this.circleVertices, i + 1);
+            const ni0 = getCircle(this.circleNormals, i);
+            const ni1 = getCircle(this.circleNormals, i + 1);
             
             for (let j0 = 0; j0 < this.radialSegment; j0++) {
                 const j1 = (j0 + 1) % this.radialSegment;
@@ -97,17 +108,19 @@ export class TubeMeshBuilder {
                 const p1 = ci1.slice(j0 * 3, j0 * 3 + 3);
                 const p2 = ci1.slice(j1 * 3, j1 * 3 + 3);
                 const p3 = ci0.slice(j1 * 3, j1 * 3 + 3);
+                const n0 = ni0.slice(j0 * 3, j0 * 3 + 3);
+                const n1 = ni1.slice(j0 * 3, j0 * 3 + 3);
+                const n2 = ni1.slice(j1 * 3, j1 * 3 + 3);
+                const n3 = ni0.slice(j1 * 3, j1 * 3 + 3);
 
                 // Triangle 1: p0 → p1 → p2
                 this.tubeTriangles.set([...p0, ...p1, ...p2], offset);
-                const n1 = computeTriangleNormal(p0, p1, p2);
-                this.tubeNormals.set([...n1, ...n1, ...n1], offset);
+                this.tubeNormals.set([...n0, ...n1, ...n2], offset);
                 offset += 9;
 
                 // Triangle 2: p0 → p2 → p3
                 this.tubeTriangles.set([...p0, ...p2, ...p3], offset);
-                const n2 = computeTriangleNormal(p0, p2, p3);
-                this.tubeNormals.set([...n2, ...n2, ...n2], offset);
+                this.tubeNormals.set([...n0, ...n2, ...n3], offset);
                 offset += 9;
             }
         }
