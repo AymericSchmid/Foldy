@@ -31,15 +31,26 @@ export function initRegl() {
         canvas,
     });
 
-    const colorTex = regl.texture({
-        width: fbWidth,
-        height: fbHeight,
-        format: 'rgba',
-        type: 'uint8'
-    })
-
     // Build framebuffers
-    const sceneFbo = regl.framebuffer({ depth: true, color: colorTex });
+    const fbo1 = regl.framebuffer({ 
+        depth: true, 
+        color: regl.texture({
+            width: fbWidth,
+            height: fbHeight,
+            format: 'rgba',
+            type: 'uint8'
+        })
+    });
 
-    return { regl, canvas, DPR, sceneFbo };
+    const fbo2 = regl.framebuffer({ 
+        depth: true, 
+        color: regl.texture({
+            width: fbWidth,
+            height: fbHeight,
+            format: 'rgba',
+            type: 'uint8'
+        })
+    });
+
+    return { regl, canvas, DPR, fbo1, fbo2 };
 }

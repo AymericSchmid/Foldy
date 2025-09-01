@@ -11,8 +11,9 @@ import { extractMat3FromMat4, transformVec3WithMat3 } from "./utils/math3d";
 import { LIGTH, VIS } from "./config";
 import { setupProtein } from "./scene/setupProtein";
 import { createDrawToScreen } from "./draw/drawToScreen";
+import { createDrawFxaa } from "./draw/drawFxaa";
 
-const { regl, canvas, DPR, sceneFbo } = initRegl();
+const { regl, canvas, DPR, fbo1, fbo2 } = initRegl();
 const trackball = createTrackball(canvas);   // Interactive rotation controller
 const ui = createUiControls();           // UI toggles (spheres, vectors, etc.)
 
@@ -49,6 +50,7 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
   const drawCaps = createDrawCircleCaps(regl, geo.tubeCaps);
   const drawTube = createDrawTube(regl, geo.tubePositions, geo.tubeNormals, LIGTH.MAX);
   const drawToScreen = createDrawToScreen(regl);
+  const drawFxaa = createDrawFxaa(regl);
 
   function renderScene({ projection, view, model }) {
     const common = { projection, model, view };
@@ -76,15 +78,26 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
     const model = mat4.create();
     mat4.rotateX(model, model, trackball.x);
     mat4.rotateY(model, model, trackball.y);
-    
+
+    var fboTemp;
+    var fboIn = fbo1;
+    var fboOut = fbo2;
     // First pass, render the scene into the offscreen BFO
-    regl({framebuffer: sceneFbo})(() => {
+    regl({ framebuffer: fboOut })(() => {
       regl.clear({ color: [0,0,0.2, 1], depth: 1});
       renderScene({projection, view, model });
     });
 
-    // Render the buffer to the screen
-    drawToScreen({ src: sceneFbo });
+    if (ui.fxaaEnabled){
+      // Second pass, apply FXAA
+      fboTemp = fboOut;
+      fboOut = fboIn;
+      fboIn = fboTemp;
+      regl({ framebuffer: fboOut })(() => {
+        drawFxaa({ src: fboIn, resolution: [canvas.width, canvas.height] });
+      });
+    }
     
+    drawToScreen({ src: fboOut });
   });
 })();
