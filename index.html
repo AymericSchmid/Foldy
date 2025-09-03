@@ -47,6 +47,16 @@
       font-size: 16px;
       color: #ddd;
     }
+
+    .controls select {
+      width: 100%;
+      padding: 4px;
+      margin-top: 6px;
+      border-radius: 4px;
+      border: none;
+      background: #222;
+      color: #eee;
+    }
   </style>
 </head>
 <body>
@@ -61,6 +71,12 @@
     <label><input type="checkbox" id="toggleTube" checked> Tube</label>
     <label><input type="checkbox" id="toggleFXAA" checked> FXAA</label>
     <label><input type="checkbox" id="toggleBloom" checked> Bloom</label>
+
+    <h3>Style</h3>
+    <select id="styleSelect">
+      <option value="phong" selected>Phong</option>
+      <option value="chrome">Chrome</option>
+    </select>
   </div>
 
   <script type="module" src="src/index.js"></script>

@@ -81,18 +81,29 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
       drawBinormal({ ...common, color: [0, 0, 1] });
     } 
     if (ui.showTubeCaps) drawCaps({ ...common, color: [0.8, 0.1, 0.5], alpha: 0.8 });
-    //if (ui.showTube) drawTubePhong({ 
-    //  ...common, 
-    //  lightDirections: viewLightDirections, 
-    //  lightColors: LIGTH.COLORS, 
-    //  numLights: LIGTH.DIRECTIONS.length 
-    //});
-    if (ui.showTube) drawTubeChrome({...common, 
-      cameraPos: cameraPosition, 
-      envMap: chromeEnvMap,
-      intensity: LIGTH.CHROME_INTENSITY,
-      chromeSparkle: LIGTH.CHROME_SPARKLE
-    });
+
+
+
+    if (ui.showTube) {
+      switch (ui.style) {
+        case 'phong':
+          drawTubePhong({ 
+            ...common, 
+            lightDirections: viewLightDirections, 
+            lightColors: LIGTH.COLORS, 
+            numLights: LIGTH.DIRECTIONS.length 
+          });
+          break;
+        case 'chrome':
+          drawTubeChrome({...common, 
+            cameraPos: cameraPosition, 
+            envMap: chromeEnvMap,
+            intensity: LIGTH.CHROME_INTENSITY,
+            chromeSparkle: LIGTH.CHROME_SPARKLE
+          });
+          break;
+      }
+    }
   }
 
   // Render loop

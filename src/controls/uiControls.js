@@ -6,7 +6,8 @@ export function createUiControls() {
     const toggleTubeCaps = document.getElementById('toggleTubeCaps');
     const toggleTube = document.getElementById('toggleTube');
     const toggleFXAA = document.getElementById('toggleFXAA');
-    const toggleBloom = document.getElementById('toggleBloom')
+    const toggleBloom = document.getElementById('toggleBloom');
+    const styleSelect = document.getElementById('styleSelect');
 
     const state = {
         showVectors: toggleVectors.checked,
@@ -15,7 +16,8 @@ export function createUiControls() {
         showTubeCaps: toggleTubeCaps.checked,
         showTube: toggleTube.checked,
         fxaaEnabled: toggleFXAA.checked,
-        bloomEnabled: toggleBloom.checked
+        bloomEnabled: toggleBloom.checked,
+        style: styleSelect.value
     }
 
     toggleVectors.addEventListener('change', (e) => {
@@ -44,6 +46,10 @@ export function createUiControls() {
 
     toggleBloom.addEventListener('change', (e) => {
         state.bloomEnabled = e.target.checked;
+    });
+
+    styleSelect.addEventListener('change', (e) => {
+        state.style = e.target.value;
     });
 
     return state;
