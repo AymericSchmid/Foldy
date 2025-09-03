@@ -6,6 +6,7 @@ export function createUiControls() {
     const toggleTubeCaps = document.getElementById('toggleTubeCaps');
     const toggleTube = document.getElementById('toggleTube');
     const toggleFXAA = document.getElementById('toggleFXAA');
+    const toggleBloom = document.getElementById('toggleBloom')
 
     const state = {
         showVectors: toggleVectors.checked,
@@ -13,7 +14,8 @@ export function createUiControls() {
         showAminoAcids: toggleAminoAcids.checked,
         showTubeCaps: toggleTubeCaps.checked,
         showTube: toggleTube.checked,
-        fxaaEnabled: toggleFXAA.checked
+        fxaaEnabled: toggleFXAA.checked,
+        bloomEnabled: toggleBloom.checked
     }
 
     toggleVectors.addEventListener('change', (e) => {
@@ -38,6 +40,10 @@ export function createUiControls() {
 
     toggleFXAA.addEventListener('change', (e) => {
         state.fxaaEnabled = e.target.checked;
+    });
+
+    toggleBloom.addEventListener('change', (e) => {
+        state.bloomEnabled = e.target.checked;
     });
 
     return state;

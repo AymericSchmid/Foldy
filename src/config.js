@@ -12,3 +12,6 @@ export const LIGTH = {
         [  0.4, 0.7, 1.0 ]
     ]
 };
+export const POST_PROC = {
+    BLOOM_INTENSITY: 15, BLOOM_THRESHOLD: 0.9
+};

@@ -8,12 +8,15 @@ import { createTrackball } from "./controls/trackball";
 import { createUiControls } from "./controls/uiControls";
 import { buildVectorLines } from "./utils/geometry";
 import { extractMat3FromMat4, transformVec3WithMat3 } from "./utils/math3d";
-import { LIGTH, VIS } from "./config";
+import { LIGTH, VIS, POST_PROC } from "./config";
 import { setupProtein } from "./scene/setupProtein";
 import { createDrawToScreen } from "./draw/drawToScreen";
 import { createDrawFxaa } from "./draw/drawFxaa";
+import { createDrawBrightRegions } from "./draw/drawBrightRegions";
+import { createDrawGaussianBlur } from "./draw/drawGaussianBlur";
+import { createDrawBloom } from "./draw/drawBloom";
 
-const { regl, canvas, DPR, fbo1, fbo2 } = initRegl();
+const { regl, canvas, DPR, fboScene, ping, pong } = initRegl();
 const trackball = createTrackball(canvas);   // Interactive rotation controller
 const ui = createUiControls();           // UI toggles (spheres, vectors, etc.)
 
@@ -51,6 +54,9 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
   const drawTube = createDrawTube(regl, geo.tubePositions, geo.tubeNormals, LIGTH.MAX);
   const drawToScreen = createDrawToScreen(regl);
   const drawFxaa = createDrawFxaa(regl);
+  const drawBrightRegions = createDrawBrightRegions(regl);
+  const drawGaussianBlur = createDrawGaussianBlur(regl);
+  const drawBloom = createDrawBloom(regl);
 
   function renderScene({ projection, view, model }) {
     const common = { projection, model, view };
@@ -79,25 +85,66 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
     mat4.rotateX(model, model, trackball.x);
     mat4.rotateY(model, model, trackball.y);
 
-    var fboTemp;
-    var fboIn = fbo1;
-    var fboOut = fbo2;
-    // First pass, render the scene into the offscreen BFO
-    regl({ framebuffer: fboOut })(() => {
+    // 1) Scene pass
+    fboScene.use(() => {
       regl.clear({ color: [0,0,0.2, 1], depth: 1});
       renderScene({projection, view, model });
     });
 
-    if (ui.fxaaEnabled){
-      // Second pass, apply FXAA
-      fboTemp = fboOut;
-      fboOut = fboIn;
-      fboIn = fboTemp;
-      regl({ framebuffer: fboOut })(() => {
-        drawFxaa({ src: fboIn, resolution: [canvas.width, canvas.height] });
+    let compositeFbo = fboScene; // default fallback if bloom is off
+
+    if(ui.bloomEnabled) {
+      // 2) Bright regions: scene -> ping
+      ping.use(() => {
+        drawBrightRegions({ src: fboScene, threshold: POST_PROC.BLOOM_THRESHOLD });
       });
+
+      // 3) Gaussian blur: ping-pong N passes
+      let src = ping;
+      let dst = pong;
+      let horizontal = true;
+      const passes = 10;
+
+      for(var i = 0; i < passes; i++){
+        dst.use(() => {
+          drawGaussianBlur({
+            src,
+            horizontal,
+            resolution: [dst.width, dst.height],
+          });
+        });
+        // swap
+        const tmp = src; src = dst; dst = tmp;
+        horizontal = !horizontal;
+      }
+
+      // After the loop, the blurred image is in `src`
+      const blurred = src;
+
+      // 4) Composite: original + blurred -> pong
+      pong.use(() => {
+        drawBloom({
+          src:   fboScene, // original scene
+          bloom: blurred,  // blurred brights
+          intensity: POST_PROC.BLOOM_INTENSITY
+        });
+      });
+
+      compositeFbo = pong; // The composed result
+    }
+
+    if (ui.fxaaEnabled){
+      // 5) FXAA: composite -> ping
+      ping.use(() => {
+        drawFxaa({
+          src: compositeFbo,
+          resolution: [ping.width, ping.height],
+        });
+      });
+      compositeFbo = ping;
     }
     
-    drawToScreen({ src: fboOut });
+    // 6) Present to screen
+    drawToScreen({ src: compositeFbo });
   });
 })();

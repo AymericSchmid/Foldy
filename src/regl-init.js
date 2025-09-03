@@ -32,7 +32,7 @@ export function initRegl() {
     });
 
     // Build framebuffers
-    const fbo1 = regl.framebuffer({ 
+    const fboScene = regl.framebuffer({ 
         depth: true, 
         color: regl.texture({
             width: fbWidth,
@@ -42,8 +42,8 @@ export function initRegl() {
         })
     });
 
-    const fbo2 = regl.framebuffer({ 
-        depth: true, 
+    const ping = regl.framebuffer({ 
+        depth: false, 
         color: regl.texture({
             width: fbWidth,
             height: fbHeight,
@@ -52,5 +52,15 @@ export function initRegl() {
         })
     });
 
-    return { regl, canvas, DPR, fbo1, fbo2 };
+    const pong = regl.framebuffer({ 
+        depth: false, 
+        color: regl.texture({
+            width: fbWidth,
+            height: fbHeight,
+            format: 'rgba',
+            type: 'uint8'
+        })
+    });
+
+    return { regl, canvas, DPR, fboScene, ping, pong };
 }
