@@ -1,6 +1,6 @@
 import glsl from 'glslify';
 import vert from '../shaders/tube.vert?raw';
-import frag from '../shaders/tube.frag?raw';
+import frag from '../shaders/phong.frag?raw';
 
 function makeLightUniforms(regl, maxLights) {
   const uniforms = {
@@ -20,7 +20,7 @@ function makeLightUniforms(regl, maxLights) {
 }
 
 // Creates a REGL draw command for rendering a tube defined with triangles
-export function createDrawTube(regl, positions, normals, maxLights) {
+export function createDrawTubePhong(regl, positions, normals, maxLights) {
     return regl({
         // Vertex and fragment shaders
         vert: glsl`${vert}`,

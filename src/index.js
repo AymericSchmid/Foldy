@@ -3,7 +3,8 @@ import mat4 from 'gl-mat4';
 import { createDrawSpheres } from "./draw/drawSpheres";
 import { createDrawVectors } from "./draw/drawVectors";
 import { createDrawCircleCaps } from "./draw/drawCircleCaps"
-import { createDrawTube } from "./draw/drawTube";
+import { createDrawTubePhong } from "./draw/drawTubePhong";
+import { createDrawTubeChrome } from "./draw/drawTubeChrome";
 import { createTrackball } from "./controls/trackball";
 import { createUiControls } from "./controls/uiControls";
 import { buildVectorLines } from "./utils/geometry";
@@ -15,6 +16,7 @@ import { createDrawFxaa } from "./draw/drawFxaa";
 import { createDrawBrightRegions } from "./draw/drawBrightRegions";
 import { createDrawGaussianBlur } from "./draw/drawGaussianBlur";
 import { createDrawBloom } from "./draw/drawBloom";
+import { loadCubeMap } from "./loaders/loadCubeMap";
 
 const { regl, canvas, DPR, fboScene, ping, pong } = initRegl();
 const trackball = createTrackball(canvas);   // Interactive rotation controller
@@ -38,6 +40,14 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
 // Scene setup
 (async() => {
   const geo = await setupProtein();
+  const chromeEnvMap = await loadCubeMap({
+    px: 'public/skybox/blue/px.jpg',
+    nx: 'public/skybox/blue/nx.jpg',
+    py: 'public/skybox/blue/py.jpg',
+    ny: 'public/skybox/blue/ny.jpg',
+    pz: 'public/skybox/blue/pz.jpg',
+    nz: 'public/skybox/blue/nz.jpg',
+  }, regl);
 
   // Generate 3D vector lines (tangent, normal, binormal)
   const tangeantLines = buildVectorLines(geo.spline, geo.vectors.t, VIS.VECTORS_SCALE);
@@ -51,7 +61,8 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
   const drawReference = createDrawVectors(regl, refLines);
   const drawBinormal = createDrawVectors(regl, binormalLines);
   const drawCaps = createDrawCircleCaps(regl, geo.tubeCaps);
-  const drawTube = createDrawTube(regl, geo.tubePositions, geo.tubeNormals, LIGTH.MAX);
+  const drawTubePhong = createDrawTubePhong(regl, geo.tubePositions, geo.tubeNormals, LIGTH.MAX);
+  const drawTubeChrome = createDrawTubeChrome(regl, geo.tubePositions, geo.tubeNormals);
   const drawToScreen = createDrawToScreen(regl);
   const drawFxaa = createDrawFxaa(regl);
   const drawBrightRegions = createDrawBrightRegions(regl);
@@ -70,11 +81,17 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
       drawBinormal({ ...common, color: [0, 0, 1] });
     } 
     if (ui.showTubeCaps) drawCaps({ ...common, color: [0.8, 0.1, 0.5], alpha: 0.8 });
-    if (ui.showTube) drawTube({ 
-      ...common, 
-      lightDirections: viewLightDirections, 
-      lightColors: LIGTH.COLORS, 
-      numLights: LIGTH.DIRECTIONS.length 
+    //if (ui.showTube) drawTubePhong({ 
+    //  ...common, 
+    //  lightDirections: viewLightDirections, 
+    //  lightColors: LIGTH.COLORS, 
+    //  numLights: LIGTH.DIRECTIONS.length 
+    //});
+    if (ui.showTube) drawTubeChrome({...common, 
+      cameraPos: cameraPosition, 
+      envMap: chromeEnvMap,
+      intensity: LIGTH.CHROME_INTENSITY,
+      chromeSparkle: LIGTH.CHROME_SPARKLE
     });
   }
 

@@ -10,7 +10,9 @@ export const LIGTH = {
     COLORS: [
         [  1.0, 1.0, 1.0 ],
         [  0.4, 0.7, 1.0 ]
-    ]
+    ],
+    CHROME_INTENSITY: 1.2,
+    CHROME_SPARKLE: 10.0
 };
 export const POST_PROC = {
     BLOOM_INTENSITY: 15, BLOOM_THRESHOLD: 0.9
