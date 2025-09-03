@@ -4,18 +4,19 @@ import { createDrawSpheres } from "./draw/drawSpheres";
 import { createDrawVectors } from "./draw/drawVectors";
 import { createDrawCircleCaps } from "./draw/drawCircleCaps"
 import { createDrawTubePhong } from "./draw/drawTubePhong";
-import { createDrawTubeChrome } from "./draw/drawTubeChrome";
+import { createDrawTubeChrome } from "./draw/drawTubeChrome.js";
 import { createTrackball } from "./controls/trackball";
 import { createUiControls } from "./controls/uiControls";
 import { buildVectorLines } from "./utils/geometry";
 import { extractMat3FromMat4, transformVec3WithMat3 } from "./utils/math3d";
-import { LIGTH, VIS, POST_PROC } from "./config";
+import { PHONG, CHROME, HALFTONE, VIS, POST_PROC, } from "./config";
 import { setupProtein } from "./scene/setupProtein";
 import { createDrawToScreen } from "./draw/drawToScreen";
 import { createDrawFxaa } from "./draw/drawFxaa";
 import { createDrawBrightRegions } from "./draw/drawBrightRegions";
 import { createDrawGaussianBlur } from "./draw/drawGaussianBlur";
 import { createDrawBloom } from "./draw/drawBloom";
+import { createDrawHalftone } from "./draw/drawHalftone.js";
 import { loadCubeMap } from "./loaders/loadCubeMap";
 
 const { regl, canvas, DPR, fboScene, ping, pong } = initRegl();
@@ -35,7 +36,7 @@ const projection = mat4.perspective([],
 
 // transform lights once in view-space
 const viewRotMat3 = extractMat3FromMat4(view);
-const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(dir, viewRotMat3));
+const viewLightDirections = PHONG.DIRECTIONS.map((dir) => transformVec3WithMat3(dir, viewRotMat3));
 
 // Scene setup
 (async() => {
@@ -61,13 +62,14 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
   const drawReference = createDrawVectors(regl, refLines);
   const drawBinormal = createDrawVectors(regl, binormalLines);
   const drawCaps = createDrawCircleCaps(regl, geo.tubeCaps);
-  const drawTubePhong = createDrawTubePhong(regl, geo.tubePositions, geo.tubeNormals, LIGTH.MAX);
+  const drawTubePhong = createDrawTubePhong(regl, geo.tubePositions, geo.tubeNormals, PHONG.MAX);
   const drawTubeChrome = createDrawTubeChrome(regl, geo.tubePositions, geo.tubeNormals);
   const drawToScreen = createDrawToScreen(regl);
   const drawFxaa = createDrawFxaa(regl);
   const drawBrightRegions = createDrawBrightRegions(regl);
   const drawGaussianBlur = createDrawGaussianBlur(regl);
   const drawBloom = createDrawBloom(regl);
+  const drawHalftone = createDrawHalftone(regl);
 
   function renderScene({ projection, view, model }) {
     const common = { projection, model, view };
@@ -81,25 +83,23 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
       drawBinormal({ ...common, color: [0, 0, 1] });
     } 
     if (ui.showTubeCaps) drawCaps({ ...common, color: [0.8, 0.1, 0.5], alpha: 0.8 });
-
-
-
     if (ui.showTube) {
       switch (ui.style) {
+        case 'halftone':    // Share the same pipeline as phong
         case 'phong':
           drawTubePhong({ 
             ...common, 
             lightDirections: viewLightDirections, 
-            lightColors: LIGTH.COLORS, 
-            numLights: LIGTH.DIRECTIONS.length 
+            lightColors: PHONG.COLORS, 
+            numLights: PHONG.DIRECTIONS.length 
           });
           break;
         case 'chrome':
           drawTubeChrome({...common, 
             cameraPos: cameraPosition, 
             envMap: chromeEnvMap,
-            intensity: LIGTH.CHROME_INTENSITY,
-            chromeSparkle: LIGTH.CHROME_SPARKLE
+            intensity: CHROME.INTENSITY,
+            chromeSparkle: CHROME.SPARKLE
           });
           break;
       }
@@ -113,21 +113,38 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
     mat4.rotateX(model, model, trackball.x);
     mat4.rotateY(model, model, trackball.y);
 
-    // 1) Scene pass
+    // Scene pass
     fboScene.use(() => {
-      regl.clear({ color: [0,0,0.2, 1], depth: 1});
+      regl.clear({ color: [0,0,0.2 * (ui.style != 'halftone'), 1], depth: 1});
       renderScene({projection, view, model });
     });
 
     let compositeFbo = fboScene; // default fallback if bloom is off
 
+    // Halftone style is done in post-processing
+    if (ui.style == 'halftone'){
+      // Halftone: scene -> ping
+      pong.use(() => {
+        drawHalftone({ src: fboScene, 
+          resolution: [ping.width, ping.height], 
+          angle: HALFTONE.ANGLE,
+          cell: HALFTONE.CELL,
+          thickness: HALFTONE.THICKNESS,
+          colorOn: HALFTONE.COLOR_ON,
+          colorOff: HALFTONE.COLOR_OFF
+        })
+      });
+
+      compositeFbo = pong;
+    }
+
     if(ui.bloomEnabled) {
-      // 2) Bright regions: scene -> ping
+      // Bright regions: scene -> ping
       ping.use(() => {
         drawBrightRegions({ src: fboScene, threshold: POST_PROC.BLOOM_THRESHOLD });
       });
 
-      // 3) Gaussian blur: ping-pong N passes
+      // Gaussian blur: ping-pong N passes
       let src = ping;
       let dst = pong;
       let horizontal = true;
@@ -149,7 +166,7 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
       // After the loop, the blurred image is in `src`
       const blurred = src;
 
-      // 4) Composite: original + blurred -> pong
+      // Composite: original + blurred -> pong
       pong.use(() => {
         drawBloom({
           src:   fboScene, // original scene
@@ -162,7 +179,7 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
     }
 
     if (ui.fxaaEnabled){
-      // 5) FXAA: composite -> ping
+      // FXAA: composite -> ping
       ping.use(() => {
         drawFxaa({
           src: compositeFbo,
@@ -172,7 +189,7 @@ const viewLightDirections = LIGTH.DIRECTIONS.map((dir) => transformVec3WithMat3(
       compositeFbo = ping;
     }
     
-    // 6) Present to screen
+    // Present to screen
     drawToScreen({ src: compositeFbo });
   });
 })();
