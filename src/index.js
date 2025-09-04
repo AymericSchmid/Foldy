@@ -17,14 +17,15 @@ import { createDrawBrightRegions } from "./draw/drawBrightRegions";
 import { createDrawGaussianBlur } from "./draw/drawGaussianBlur";
 import { createDrawBloom } from "./draw/drawBloom";
 import { createDrawHalftone } from "./draw/drawHalftone.js";
+import { createDrawBgMovingGradient } from "./draw/drawBgMovingGradient.js";
 import { loadCubeMap } from "./loaders/loadCubeMap";
 
 const { regl, canvas, DPR, fboScene, ping, pong } = initRegl();
 const trackball = createTrackball(canvas);   // Interactive rotation controller
 const ui = createUiControls();           // UI toggles (spheres, vectors, etc.)
 
-const cameraPosition = [0, 0, 2];
-const target = [0, 0, 0];
+const cameraPosition = [0, 0, 1.7];
+const target = [0, 0, 0.0];
 const up = [0, 1, 0];
 const view = mat4.lookAt([], cameraPosition, target, up);
 const projection = mat4.perspective([],
@@ -70,6 +71,7 @@ const viewLightDirections = PHONG.DIRECTIONS.map((dir) => transformVec3WithMat3(
   const drawGaussianBlur = createDrawGaussianBlur(regl);
   const drawBloom = createDrawBloom(regl);
   const drawHalftone = createDrawHalftone(regl);
+  const drawBgMovingGradient = createDrawBgMovingGradient(regl);
 
   function renderScene({ projection, view, model }) {
     const common = { projection, model, view };
@@ -115,7 +117,8 @@ const viewLightDirections = PHONG.DIRECTIONS.map((dir) => transformVec3WithMat3(
 
     // Scene pass
     fboScene.use(() => {
-      regl.clear({ color: [0,0,0.2 * (ui.style != 'halftone'), 1], depth: 1});
+      regl.clear({ color: [0.7,0.7,0.7, 1.0], depth: 1});
+      if (ui.style == 'phong') drawBgMovingGradient({ resolution: [ping.width, ping.height], time: regl.now() });
       renderScene({projection, view, model });
     });
 

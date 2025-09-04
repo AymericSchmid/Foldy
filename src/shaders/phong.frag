@@ -12,8 +12,8 @@ uniform vec3 lightColors[MAX_LIGHTS];
 
 // Material properties
 const vec3 baseColor = vec3(1.0, 1.0, 1.0);
-const vec3 ambientColor = vec3(0.2);
-const float shininess = 128.0;
+const vec3 ambientColor = vec3(0.01);
+const float shininess = 10.0;
 
 // Computes contribution of one light
 vec3 computeLight(vec3 lightDir, vec3 lightColor, vec3 normal, vec3 viewDir) {
