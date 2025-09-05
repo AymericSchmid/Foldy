@@ -2,7 +2,8 @@
   "name": "protein-viewer",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite src/demo",
+    "build": "vite build"
   },
   "keywords": [],
   "author": "",
