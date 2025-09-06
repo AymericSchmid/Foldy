@@ -1,6 +1,6 @@
 import glsl from 'glslify';
-import vert from '../shaders/shared.vert?raw';
-import frag from '../shaders/chrome.frag?raw';
+import vert from '../shaders/shared.vert';
+import frag from '../shaders/chrome.frag';
 
 // Creates a REGL draw command for rendering a tube defined with triangles
 export function createDrawTubeChrome(regl, positions, normals) {

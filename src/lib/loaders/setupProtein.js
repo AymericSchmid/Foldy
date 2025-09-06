@@ -1,4 +1,3 @@
-import createSphere from 'primitive-sphere'
 import { loadPDB } from "./loadPDB";
 import { catmullRomChain } from "../core/geometry";
 import { RMFFrameGenerator } from "../mesh/RMFFrameGenerator";

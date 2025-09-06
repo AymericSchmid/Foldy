@@ -1,8 +1,8 @@
 import glsl from 'glslify';
-import vert from '../shaders/post/blit.vert?raw'
-import fragBloom from '../shaders/post/bloom.frag?raw'
-import fragBright from '../shaders/post/bright.frag?raw'
-import fragBlur from '../shaders/post/gaussianBlur.frag?raw'
+import vert from '../shaders/post/blit.vert'
+import fragBloom from '../shaders/post/bloom.frag'
+import fragBright from '../shaders/post/bright.frag'
+import fragBlur from '../shaders/post/gaussianBlur.frag'
 
 export function createDrawBrightRegions(regl) {
     return regl({

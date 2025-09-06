@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "allowJs": true,                   // include your .js internals
+    "checkJs": false,                  // set true if you want JS type-checking via JSDoc
+    "declaration": true,
+    "emitDeclarationOnly": false,      // Rollup handles d.ts via rollup-plugin-dts
+    "outDir": "dist",
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "Bundler",
+    "isolatedModules": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "importHelpers": true
+  },
+  "include": ["src/lib/**/*.ts", "src/lib/**/*.js"]
+}

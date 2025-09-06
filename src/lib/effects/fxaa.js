@@ -1,6 +1,6 @@
 import glsl from 'glslify';
-import vert from '../shaders/post/blit.vert?raw'
-import frag from '../shaders/post/fxaa.frag?raw'
+import vert from '../shaders/post/blit.vert'
+import frag from '../shaders/post/fxaa.frag'
 
 // Creates a REGL draw command to render a texture on the screen
 export function createDrawFxaa(regl) {

@@ -1,6 +1,6 @@
 import glsl from 'glslify';
-import vert from '../shaders/post/blit.vert?raw'
-import frag from '../shaders/gradient.frag?raw'
+import vert from '../shaders/post/blit.vert';
+import frag from '../shaders/gradient.frag';
 
 export function createDrawBgMovingGradient(regl) {
     return regl({

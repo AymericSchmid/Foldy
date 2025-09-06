@@ -36,7 +36,7 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
         chrome: { intensity: 1.2, sparkle: 10.0, },
         light: { 
             colors: [[46.0/255.0, 29.0/255.0, 113.0/255.0],[150.0/255.0, 84.0/255.0, 36.0/255.0]],
-            directions: [[0.3,0.6,0.2],[-0.5,-0.3,0]]
+            directions: [[0.3,0.6,0],[-0.5,-0.3,0]]
         }
     };
     // Apply initial overrides

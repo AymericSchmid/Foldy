@@ -1,6 +1,6 @@
 import glsl from 'glslify';
-import vert from '../shaders/post/blit.vert?raw'
-import frag from '../shaders/post/halftone.frag?raw'
+import vert from '../shaders/post/blit.vert'
+import frag from '../shaders/post/halftone.frag'
 
 // Creates a REGL draw command to render a texture on the screen
 export function createDrawHalftone(regl) {

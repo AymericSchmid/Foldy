@@ -1,6 +1,6 @@
 import glsl from 'glslify';
-import vert from '../shaders/shared.vert?raw';
-import frag from '../shaders/phong.frag?raw';
+import vert from '../shaders/shared.vert';
+import frag from '../shaders/phong.frag';
 
 function makeLightUniforms(regl, maxLights) {
   const uniforms = {
