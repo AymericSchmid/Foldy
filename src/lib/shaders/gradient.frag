@@ -1,9 +1,13 @@
 precision mediump float;
 
 varying vec2 vUV;
-varying vec2 vPosition;
 
 uniform float time;
+uniform float speed;
+uniform float noiseStrength;
+uniform vec3 baseFirst;
+uniform vec3 accent;
+uniform vec3 baseSecond;
 
 float lines(vec2 uv, float offset){
     return smoothstep(
@@ -45,22 +49,15 @@ float noise(vec3 p){
 }
 
 void main() {
+    float t = time * speed;
     vec2 p = vUV;
     vec2 warp = vec2(
-        noise(vec3(p*2.0,          time*0.15)),
-        noise(vec3(p*2.0 + 17.2,   time*0.15))
+        noise(vec3(p*2.0,          t*0.15)),
+        noise(vec3(p*2.0 + 17.2,   t*0.15))
     ) * 2.0 - 1.0;
-    float angle = 0.35 * (noise(vec3(p*1.9 + 1.1*warp, time*0.1)) * 2.0 - 1.0);
+    float angle = noiseStrength * 0.35 * (noise(vec3(p*1.9 + 1.1*warp, t*0.1)) * 2.0 - 1.0);
 
-    
-    //vec2 warp = vec2(noise(vec3(p, time*.05)),
-    //                noise(vec3(p+1.2, time*.05)));
-    //float n = noise(vec3(2.*warp+vUV, time*1.));
     vec2 uv = vUV*rotate2D(angle + 0.5);
-
-    vec3 baseFirst = vec3(46./255., 29./255., 113./255.);
-    vec3 accent = vec3(0.,0.,0.);
-    vec3 baseSecond = vec3(150./255., 84./255., 36./255.);
 
     float basePattern = lines(uv, 0.2);
     float secondPattern = lines(uv, 0.1);

@@ -7,6 +7,8 @@ const toggleBloom = document.getElementById('toggleBloom') as HTMLInputElement |
 
 const initialParams = {'bloom': {'threshold': 0.4, 'intensity': 100} };
 const viewer = createProteinViewer(container, { style:'phong', bloom:false, fxaa:false, background: 'movingGradient', params: initialParams });
+viewer.setCamera([0,0,0],[0,0,0])
+viewer.setPosition([0.4,0,-1]);
 
 viewer.loadPDB('/AF-A0JP26-F1-model_v4.pdb');
 const skybox = '/skybox/blue/'

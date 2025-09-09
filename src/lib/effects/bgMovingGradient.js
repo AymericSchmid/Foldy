@@ -10,7 +10,12 @@ export function createDrawBgMovingGradient(regl) {
         frag: glsl`${frag}`,
         uniforms: {
             resolution: regl.prop('resolution'),
-            time: regl.prop('time')
+            time: regl.prop('time'),
+            speed: regl.prop('speed'),
+            noiseStrength: regl.prop('noiseStrength'),
+            baseFirst: regl.prop('baseFirst'),
+            accent: regl.prop('accent'),
+            baseSecond: regl.prop('baseSecond')
         },
         depth: { enable: false }
     });

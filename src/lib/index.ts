@@ -23,8 +23,16 @@ export type ChromeParams = {
 };
 
 export type LightParams = {
-  colors: RGB[],
-  directions: Vec3[]
+  colors: RGB[];
+  directions: Vec3[];
+}
+
+export type BackgroundParams = {
+  baseFirst: RGB;
+  baseSecond: RGB;
+  accent: RGB;
+  speed: number;
+  noiseStrength: number;
 }
 
 export type Params = {
@@ -32,6 +40,7 @@ export type Params = {
   halftone: HalftoneParams;
   chrome: ChromeParams;
   light: LightParams;
+  background: BackgroundParams;
 };
 
 export type Options = {
@@ -42,6 +51,7 @@ export type Options = {
   dpr?: number;
   envMap?: EnvMap;               // optional for chrome
   camera?: { eye:[number,number,number]; target:[number,number,number] };
+  position?: Vec3;
   params?: DeepPartial<Params>;  // initial param overrides
 };
 
@@ -62,6 +72,7 @@ export type Viewer = {
 
   setCamera(eye:[number,number,number], target:[number,number,number]): void;
   setRotation(x:number,y:number): void;
+  setPosition(p: Vec3): void;
 
   on(event: 'loaded'|'error'|'frame', cb: (...a:any[])=>void): () => void;
   resize(width:number, height:number, dpr?:number): void;

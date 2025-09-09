@@ -29,6 +29,7 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
     let envTex: any = null;
     let rotationX: number = 0;
     let rotationY: number = 0;
+    let position: Options['position'] = opts.position ?? [0,0,-1];
 
     let params: Params = {
         bloom: { threshold: 0.1, intensity: 15, passes: 8, },
@@ -37,6 +38,13 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
         light: { 
             colors: [[46.0/255.0, 29.0/255.0, 113.0/255.0],[150.0/255.0, 84.0/255.0, 36.0/255.0]],
             directions: [[0.3,0.6,0],[-0.5,-0.3,0]]
+        },
+        background: {
+            baseFirst: [46./255., 29./255., 113./255.],
+            accent: [0.,0.,0.],
+            baseSecond: [150./255., 84./255., 36./255.],
+            speed: 1,
+            noiseStrength: 1
         }
     };
     // Apply initial overrides
@@ -46,7 +54,7 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
     const emit = (e:string, ...a:any[]) => listeners.get(e)?.forEach(fn => fn(...a));
 
     // camera
-    const eye = opts.camera?.eye ?? [0,0,1.0] as Vec3;
+    const eye = opts.camera?.eye ?? [0,0,0] as Vec3;
     const target = opts.camera?.target ?? [0,0,0] as Vec3;
     const up: Vec3 = [0,1,0];
     const view = mat4.lookAt([], eye, target, up);
@@ -95,7 +103,9 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
         const common = { projection, view, model, cameraPos: eye };
 
         if (background === 'movingGradient') {
-            drawBgMovingGradient({ resolution: [ping.width, ping.height], time: regl.now() });
+            drawBgMovingGradient({ resolution: [ping.width, ping.height], time: regl.now(), 
+                speed: params.background.speed, noiseStrength: params.background.noiseStrength,
+                baseFirst: params.background.baseFirst, baseSecond: params.background.baseSecond, accent: params.background.accent });
         }
 
         // pick style and set its uniforms
@@ -122,6 +132,7 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
         if (!running) return;
 
         const model = mat4.create();
+        mat4.translate(model, model, position);
         mat4.rotateX(model, model, rotationX);
         mat4.rotateY(model, model, rotationY);
 
@@ -181,6 +192,7 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
         rotationX = x;
         rotationY = y;
     }
+    function setPosition(p: Vec3){ position = p; }
     function resizeViewer(w:number,h:number,dpr?:number){
         resize(w, h, dpr);  // update canvas + FBOs
         mat4.perspective(projection, Math.PI/4, w/h, 0.01, 1000);
@@ -200,7 +212,7 @@ export function createProteinViewer(container: HTMLElement, opts: Options = {}):
     // bootstrap convenience
     if (!opts.camera) setCamera(eye, target);
 
-    return { canvas, setStyle, setBloom, setFxaa, setBackground, setEnvMap, setCamera, setRotation, loadPDB, on, resize: resizeViewer, destroy, setParams, setParam, getParam };
+    return { canvas, setStyle, setBloom, setFxaa, setBackground, setEnvMap, setCamera, setRotation, setPosition, loadPDB, on, resize: resizeViewer, destroy, setParams, setParam, getParam };
 }
 
 function deepMerge<T>(dst: T, src: DeepPartial<T>): T {
