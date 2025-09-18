@@ -18,6 +18,7 @@ export class TubeMeshBuilder {
         this.numTriangles = (this.numPoints - 1) * this.radialSegment * 2;
         this.tubeTriangles = new Float32Array(this.numTriangles * 9);   // 3 vertices × 3 components
         this.tubeNormals = new Float32Array(this.numTriangles * 9);     // One normal per vertex (flat shading)
+        this.tubeCaps = new Float32Array(this.numPoints * this.radialSegment * 3 * 3);  // Each ring becomes a fan of triangles connecting the center to the edges
     }
 
     // Generate ring vertices at each spline point using local RMF frame
@@ -64,9 +65,6 @@ export class TubeMeshBuilder {
 
     // Generate flat caps at each ring (optional)
     tesselateTubeCaps() {
-        // Each ring becomes a fan of triangles connecting the center to the edges
-        const positions = new Float32Array(this.numPoints * this.radialSegment * 3 * 3);
-
         for (let i = 0; i < this.numPoints; i++) {
             const centerIndex = i * this.radialSegment * 3;
             const center = this.splinePoints.slice(i * 3, i * 3 + 3);
@@ -83,11 +81,9 @@ export class TubeMeshBuilder {
 
                 const triangle = [...center, ...p0, ...p1];
                 const triIndex = i * this.radialSegment + j;
-                positions.set(triangle, triIndex * 9);
+                this.tubeCaps.set(triangle, triIndex * 9);
             }
         }
-
-        return positions;
     }
 
     // Tesselate the tube by connecting adjacent rings with quads split into triangles
@@ -133,5 +129,9 @@ export class TubeMeshBuilder {
 
     getTubeNormals() {
         return this.tubeNormals;
+    }
+
+    getTubeCaps() {
+        return this.tubeCaps;
     }
 }
