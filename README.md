@@ -15,7 +15,7 @@ Explore protein backbones, spline interpolations, and smooth-tube meshes using m
 
 ## 📸 Screenshot
 
-![image](https://github.com/user-attachments/assets/03be11dd-3598-444d-b77d-47aaa328b535)
+<img width="2234" height="1193" alt="image" src="https://github.com/user-attachments/assets/cfc944be-a66b-4d11-bbbe-bcf326f85daf" />
 
 ## 🛠️ Setup
 
